@@ -1,61 +1,262 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './style.css';
-import Logic from './logic';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./style.css";
+// import Logic from './logic';
 
-const logic = new Logic();
+// const logic = new Logic();
+
+function Dice(props) {
+  return (
+    <img
+      src={`dice-${props.value}.png`}
+      alt="Dice"
+      className="dice"
+      style={{ display: props.value === 0 ? "none" : "block" }}
+    />
+  );
+}
+
+function InputScore(props) {
+  return (
+    <div className="input-score">
+      <label htmlFor="input-score" id="text-score">
+        Set your Winning Score: {props.winningScore}
+      </label>
+      <input
+        type="range"
+        value={props.winningScore}
+        id="set-score"
+        onChange={props.onChange}
+      />
+    </div>
+  );
+}
+
+function RoundScore(props) {
+  return (
+    <div className="player-current-score" id={`current-${props.player}`}>
+      {props.roundScore}
+    </div>
+  );
+}
+
+function PlayerPanel(props) {
+  return (
+    <div
+      className={`player-${props.player}-panel ${
+        props.isActivePlayer && props.gamePlaying ? "active" : ""
+      }`}
+    >
+      <div className="player-name" id={`name-${props.player}`}>
+        {props.isWinner ? "WINNER!!!" : `Player ${props.player + 1}`}
+      </div>
+      <div className="player-score" id={`score-${props.player}`}>
+        {props.scores[props.player]}
+      </div>
+      <div className="player-current-box">
+        <div className="player-current-label">Current</div>
+        <RoundScore
+          player={props.player}
+          roundScore={props.isActivePlayer ? props.roundScore : 0}
+        />
+      </div>
+    </div>
+  );
+}
 
 class Game extends React.Component {
-    render() {
-        return (
-            <div class="wrapper clearfix">
-            <div class="player-0-panel active">
-                <div class="player-name" id="name-0">Player 1</div>
-                <div class="player-score" id="score-0">43</div>
-                <div class="player-current-box">
-                    <div class="player-current-label">Current</div>
-                    <div class="player-current-score" id="current-0">0</div>
-                </div>
-            </div>
-            
-            <div class="player-1-panel">
-                <div class="player-name" id="name-1">Player 2</div>
-                <div class="player-score" id="score-1">72</div>
-                <div class="player-current-box">
-                    <div class="player-current-label">Current</div>
-                    <div class="player-current-score" id="current-1">0</div>
-                </div>
-            </div>
-            
-            <div class="input-score">
-                <label for="input-score" id="text-score">Set your Winning Score: 100</label>
-                <input type="range" value="100" id="set-score" />
-            </div>
-            
-            <button class="btn-new"><i class="ion-ios-plus-outline"></i>New game</button>
-            <button class="btn-roll"><i class="ion-ios-loop"></i>Roll dice</button>
-            <button class="btn-hold"><i class="ion-ios-download-outline"></i>Hold</button>
-            <button class="whoops-1">WHOOPS!</button>
-            
-            <img src="dice-5.png" alt="Dice" class="dice" />
-            {/* <!-- <div class="game-rules">
-                <h1>GAME RULES</h1>
-                <ol>
-                    <li>The game has 2 players, playing in rounds</li>
-                    <li>In each turn, a player rolls a dice as many times as he whishes. Each result get added to his ROUND score</li>
-                    <li>BUT, if the player rolls a 1, all his ROUND score gets lost. After that, it's the next player's turn</li>
-                    <li>The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. After that, it's the next player's turn</li>
-                    <li>The first player to reach 100 points on GLOBAL score wins the game</li>
-                </ol>
-            </div> --> */}
-        </div>
-        )
+  constructor(props) {
+    super(props);
+    this.state = {
+      scores: [0, 0],
+      roundScore: 0,
+      activePlayer: 0,
+      gamePlaying: true,
+      currentDice: 0,
+      previousDice: 0,
+      winningScore: 10,
+      players: [0, 1],
+      winningPlayers: [false, false],
+    };
+  }
+
+  newGame() {
+    console.log("new game");
+
+    this.setState({
+      scores: [0, 0],
+      roundScore: 0,
+      activePlayer: 0,
+      gamePlaying: true,
+      currentDice: 0,
+      previousDice: 0,
+      winningScore: 10,
+      players: [0, 1],
+      winningPlayers: [false, false],
+    });
+  }
+
+  updateRoundScore(score) {
+    const rs = this.state.roundScore;
+    this.setState({
+      roundScore: rs + score,
+    });
+  }
+
+  animateRoll() {
+    setTimeout(() => {
+      this.updateCurrentDice(1);
+    }, 50);
+    setTimeout(() => {
+      this.updateCurrentDice(6);
+    }, 100);
+    setTimeout(() => {
+      this.updateCurrentDice(6);
+    }, 150);
+    setTimeout(() => {
+      this.updateCurrentDice(6);
+    }, 200);
+    setTimeout(() => {
+      this.updateCurrentDice(4);
+    }, 275);
+    setTimeout(() => {
+      this.updateCurrentDice(2);
+    }, 375);
+    setTimeout(() => {
+      this.updateCurrentDice(5);
+    }, 475);
+  }
+
+  rollDice() {
+    const dice = Math.floor(Math.random() * 6) + 1;
+    this.updatePreviousDice(dice);
+    this.animateRoll();
+
+    setTimeout(() => {
+      this.updateRoundScore(dice);
+      this.updateCurrentDice(dice);
+    }, 500);
+    return dice;
+  }
+
+  renderDice(dice) {
+    return <Dice value={dice} />;
+  }
+
+  updatePreviousDice(num) {
+    this.setState({
+      previousDice: num,
+    });
+  }
+
+  updateCurrentDice(num) {
+    this.setState({
+      currentDice: num,
+    });
+  }
+
+  updateWinningScore(event) {
+    this.setState({ winningScore: event.target.value });
+  }
+
+  checkForWinner() {
+    if (this.state.scores[this.state.activePlayer] >= this.state.winningScore) {
+      const updatePlayers = this.state.winningPlayers;
+      updatePlayers[this.state.activePlayer] = true;
+      this.setState({
+        gamePlaying: false,
+        winningPlayers: updatePlayers,
+      });
     }
+  }
+
+  gameNotStarted() {
+    if (this.state.gamePlaying) return;
+  }
+
+  renderInputScore() {
+    return (
+      <InputScore
+        winningScore={this.state.winningScore}
+        onChange={
+          this.state.gamePlaying
+            ? (e) => this.updateWinningScore(e)
+            : () => this.gameNotStarted()
+        }
+      />
+    );
+  }
+
+  holdScore() {
+    const newScores = this.state.scores;
+    newScores[this.state.activePlayer] += this.state.roundScore;
+    this.setState({
+      scores: newScores,
+      roundScore: 0,
+      currentDice: 0,
+      activePlayer: this.state.activePlayer === 0 ? 1 : 0,
+    });
+
+    this.checkForWinner();
+  }
+
+  renderPlayerPanel(player, winner) {
+    const isActivePlayer = this.state.activePlayer === player ? true : false;
+    const isWinner = winner;
+    return (
+      <PlayerPanel
+        player={player}
+        isActivePlayer={isActivePlayer}
+        gamePlaying={this.state.gamePlaying}
+        isWinner={isWinner}
+        scores={this.state.scores}
+        roundScore={this.state.roundScore}
+      />
+    );
+  }
+
+  render() {
+    return (
+      <div className="wrapper clearfix">
+        {this.renderPlayerPanel(this.state.players[0], this.state.winningPlayers[0])}
+        {this.renderPlayerPanel(this.state.players[1], this.state.winningPlayers[1])}
+
+        {this.renderInputScore()}
+
+        <button className="btn-new" onClick={() => this.newGame()}>
+          <i className="ion-ios-plus-outline"></i>New game
+        </button>
+
+        <button
+          className="btn-roll"
+          onClick={
+            this.state.gamePlaying
+              ? () => this.rollDice()
+              : () => this.gameNotStarted()
+          }
+        >
+          <i className="ion-ios-loop"></i>Roll dice
+        </button>
+
+        <button
+          className="btn-hold"
+          onClick={
+            this.state.gamePlaying
+              ? () => this.holdScore()
+              : () => this.gameNotStarted()
+          }
+        >
+          <i className="ion-ios-download-outline"></i>Hold
+        </button>
+
+        <button className="whoops-1">WHOOPS!</button>
+
+        {this.renderDice(this.state.currentDice)}
+      </div>
+    );
+  }
 }
 
 // ========================================
 
-ReactDOM.render(
-    <Game />,
-    document.getElementById('root')
-  );
+ReactDOM.render(<Game />, document.getElementById("root"));
